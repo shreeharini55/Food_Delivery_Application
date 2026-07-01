@@ -47,16 +47,50 @@ public class CartDAOImpl implements CartDAO {
 
             Connection con = DBConnection.getConnection();
 
-            PreparedStatement pstmt =
-                    con.prepareStatement(INSERT);
+            // Check whether the item already exists in the cart
+            String checkQuery =
+                    "SELECT quantity FROM cart WHERE user_id = ? AND menu_id = ?";
 
-            pstmt.setInt(1, cart.getUserId());
-            pstmt.setInt(2, cart.getMenuId());
-            pstmt.setInt(3, cart.getQuantity());
+            PreparedStatement checkStmt =
+                    con.prepareStatement(checkQuery);
 
-            status = pstmt.executeUpdate();
+            checkStmt.setInt(1, cart.getUserId());
+            checkStmt.setInt(2, cart.getMenuId());
+
+            ResultSet rs = checkStmt.executeQuery();
+
+            if (rs.next()) {
+
+                // Item already exists → increase quantity
+                int existingQuantity = rs.getInt("quantity");
+
+                String updateQuery =
+                        "UPDATE cart SET quantity = ? WHERE user_id = ? AND menu_id = ?";
+
+                PreparedStatement updateStmt =
+                        con.prepareStatement(updateQuery);
+
+                updateStmt.setInt(1, existingQuantity + cart.getQuantity());
+                updateStmt.setInt(2, cart.getUserId());
+                updateStmt.setInt(3, cart.getMenuId());
+
+                status = updateStmt.executeUpdate();
+
+            } else {
+
+                // Item doesn't exist → insert new row
+                PreparedStatement insertStmt =
+                        con.prepareStatement(INSERT);
+
+                insertStmt.setInt(1, cart.getUserId());
+                insertStmt.setInt(2, cart.getMenuId());
+                insertStmt.setInt(3, cart.getQuantity());
+
+                status = insertStmt.executeUpdate();
+            }
 
         } catch (Exception e) {
+
             e.printStackTrace();
         }
 
