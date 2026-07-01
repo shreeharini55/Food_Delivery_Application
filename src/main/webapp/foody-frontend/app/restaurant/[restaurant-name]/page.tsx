@@ -6,23 +6,13 @@ import { RestaurantMenuGrid } from "@/components/restaurant/RestaurantMenuGrid";
 import { getRestaurants } from "@/lib/restaurant-api";
 import { getMenuBySlug } from "@/lib/menu-api";
 
+export const dynamic = "force-dynamic";
+
 type RestaurantPageProps = {
   params: Promise<{ "restaurant-name": string }>;
 };
 
-export async function generateStaticParams() {
-
-  const restaurants = await getRestaurants();
-
-  return restaurants.map((restaurant) => ({
-    "restaurant-name": restaurant.slug,
-  }));
-}
-
-export default async function RestaurantPage({
-  params,
-}: RestaurantPageProps) {
-
+export default async function RestaurantPage({ params }: RestaurantPageProps) {
   const { "restaurant-name": slug } = await params;
 
   const restaurants = await getRestaurants();
